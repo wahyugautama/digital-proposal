@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { Client, ProposalDocument } from '../lib/types';
 import { calculateInvestment, calculateMilestones, currencyPrecision, formatMoney } from '../lib/money';
 const props=defineProps<{proposalId:string; initialDocument:ProposalDocument; clients:Client[]; initialClientId:string; status:string; activeShareUrl:string|null}>();
@@ -7,8 +7,10 @@ const document=ref<ProposalDocument>(structuredClone(props.initialDocument)); co
 const active=computed(()=>document.value.sections.find(item=>item.id===activeSection.value)); const totals=computed(()=>calculateInvestment(document.value.phases,document.value.discountMinor,document.value.taxBasisPoints)); const milestoneAmounts=computed(()=>{try{return calculateMilestones(totals.value.totalMinor,document.value.milestones)}catch{return document.value.milestones.map(item=>({...item,amountMinor:0}))}}); const milestoneTotal=computed(()=>document.value.milestones.reduce((sum,item)=>sum+item.percentage,0));
 const amountValue=(minor:number)=>minor/10**currencyPrecision(document.value.currency); const setAmount=(target:{amountMinor:number},event:Event)=>{target.amountMinor=Math.round(Number((event.target as HTMLInputElement).value||0)*10**currencyPrecision(document.value.currency))};
 const save=async()=>{saveState.value='saving';const response=await fetch(`/api/admin/proposals/${props.proposalId}`,{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({clientId:clientId.value,document:document.value})});saveState.value=response.ok?'saved':'error';if(!response.ok)notice.value=(await response.json()).error??'Save failed.'};
-watch([document,clientId],()=>{saveState.value='unsaved';clearTimeout(timer);timer=window.setTimeout(save,900)},{deep:true});
-const guard=(event:BeforeUnloadEvent)=>{if(saveState.value==='unsaved'||saveState.value==='saving')event.preventDefault()};window.addEventListener('beforeunload',guard);onBeforeUnmount(()=>window.removeEventListener('beforeunload',guard));
+watch([document,clientId],()=>{saveState.value='unsaved';clearTimeout(timer);timer=globalThis.setTimeout(save,900)},{deep:true});
+const guard=(event:BeforeUnloadEvent)=>{if(saveState.value==='unsaved'||saveState.value==='saving')event.preventDefault()};
+onMounted(()=>window.addEventListener('beforeunload',guard));
+onBeforeUnmount(()=>window.removeEventListener('beforeunload',guard));
 const addPhase=()=>document.value.phases.push({id:crypto.randomUUID(),name:'New phase',description:'',amountMinor:0}); const addMilestone=()=>document.value.milestones.push({id:crypto.randomUUID(),percentage:0,description:'New milestone'});
 const publish=async()=>{await save();if(saveState.value!=='saved')return;const response=await fetch(`/api/admin/proposals/${props.proposalId}/publish`,{method:'POST'});const data=await response.json();if(!response.ok){notice.value=data.error??'Unable to publish.';return}notice.value=`Published v${data.version}. Share link copied to clipboard.`;await navigator.clipboard?.writeText(data.url);};
 const duplicate=async()=>{const response=await fetch(`/api/admin/proposals/${props.proposalId}/duplicate`,{method:'POST'});const data=await response.json();if(response.ok)location.href=`/proposals/${data.id}/edit`;};

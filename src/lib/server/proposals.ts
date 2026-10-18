@@ -8,6 +8,27 @@ export const sanitizeDocument = (document: ProposalDocument): ProposalDocument =
   ...document, sections: document.sections.map(item => ({ ...item, content: sanitizeRichText(item.content) })),
 });
 
+export const parseStoredProposalDocument = (value: unknown) => proposalDocumentSchema.parse(value);
+
+export const logProposalPageError = (
+  route: 'edit' | 'preview',
+  proposalId: string | undefined,
+  error: unknown,
+) => {
+  const details: Record<string, unknown> = {
+    route,
+    proposalId: proposalId ?? 'missing',
+    errorName: error instanceof Error ? error.name : 'UnknownError',
+  };
+  if (error && typeof error === 'object' && 'code' in error && typeof error.code === 'string') {
+    details.errorCode = error.code;
+  }
+  if (error instanceof Error && error.name === 'ZodError' && 'issues' in error && Array.isArray(error.issues)) {
+    details.invalidPaths = error.issues.map((issue: { path?: PropertyKey[] }) => issue.path?.join('.') || 'document');
+  }
+  console.error('Proposal page request failed.', details);
+};
+
 export const isProposalAccessActive = (
   access: { expires_at: string; revoked_at: string | null } | null,
   now = new Date(),
