@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About — Northwind">
+  <section class="hero">
+    <span class="hero-eyebrow">About</span>
+    <h1 class="hero-title">A starter that stays out of your way.</h1>
+    <p class="hero-subtitle">
+      Northwind is plain HTML and CSS on top of Astro. No build-time magic, no utility classes to
+      memorize — just semantic markup and a single stylesheet you fully control.
+    </p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="/">Back home</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <h2 class="section-title">How it's organized</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3 class="feature-title">Pages</h3>
+        <p class="feature-text">
+          Each route is a file in <code>src/pages</code>. Plain HTML in <code>.astro</code> files.
+        </p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">🧱</div>
+        <h3 class="feature-title">Components</h3>
+        <p class="feature-text">
+          Reusable pieces like the header and footer live in <code>src/components</code>.
+        </p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3 class="feature-title">Styles</h3>
+        <p class="feature-text">
+          One stylesheet, <code>src/styles/main.css</code> — one semantic class per rule.
+        </p>
+      </article>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,9 @@
+---
+import '../styles/main.css';
+interface Props { title: string; eyebrow?: string }
+const { title, eyebrow } = Astro.props;
+const path = Astro.url.pathname;
+const nav = [['/dashboard','Overview'],['/proposals','Proposals'],['/clients','Clients'],['/templates','Templates'],['/settings','Settings']];
+---
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><meta name="description" content="Sandikala Studio proposal management"/><meta name="robots" content="noindex,nofollow"/><title>{title} · Sandikala Proposals</title></head>
+<body class="app-body"><div class="app-shell"><aside class="app-sidebar"><a class="app-brand" href="/dashboard"><span class="brand-mark">S</span><span>Sandikala<br/><small>Proposals</small></span></a><nav class="app-nav" aria-label="Main navigation">{nav.map(([href,label]) => <a class:list={['app-nav-link', path.startsWith(href) && 'is-active']} href={href}>{label}</a>)}</nav><div class="app-user"><div><strong>{Astro.locals.user?.email?.split('@')[0]}</strong><small>Studio admin</small></div><form action="/api/auth/logout" method="post"><button class="icon-button" title="Sign out" aria-label="Sign out">↗</button></form></div></aside><main class="app-main"><header class="page-heading"><div>{eyebrow && <p class="eyebrow">{eyebrow}</p>}<h1>{title}</h1></div><slot name="actions"/></header><slot/></main></div></body></html>

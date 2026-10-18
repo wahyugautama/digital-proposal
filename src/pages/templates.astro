@@ -1,0 +1,4 @@
+---
+import AdminLayout from '../layouts/AdminLayout.astro'; import { initialTemplates } from '../lib/templates';
+---
+<AdminLayout title="Templates" eyebrow="Reusable foundations"><a slot="actions" class="button button-primary" href="/proposals/new">Use a template</a><div class="template-library">{initialTemplates.map(t=><article class="library-card"><div><span class="template-icon">{t.document.proposalType==='quick'?'Q':'P'}</span><small>{t.document.proposalType==='quick'?'Quick quotation':'Full proposal'}</small></div><h2>{t.name}</h2><p>{t.document.sections.length} editable sections · {t.document.currency} default</p><a class="text-link" href="/proposals/new">Create proposal →</a></article>)}</div><p class="footnote">Built-in templates are client-neutral. Proposal duplication and custom template persistence are supported by the schema and are a documented MVP limitation in this local build.</p></AdminLayout>

@@ -1,0 +1,4 @@
+---
+const { title, text, href, action } = Astro.props;
+---
+<div class="empty-state"><span class="empty-icon">＋</span><h2>{title}</h2><p>{text}</p>{href && <a class="button button-primary" href={href}>{action}</a>}</div>

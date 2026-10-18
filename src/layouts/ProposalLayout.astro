@@ -1,0 +1,6 @@
+---
+import '../styles/main.css';
+interface Props { title: string }
+const { title } = Astro.props;
+---
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><meta name="robots" content="noindex,nofollow,noarchive"/><meta name="description" content="A private proposal prepared by Sandikala Studio"/><title>{title} · Sandikala Studio</title></head><body class="proposal-body"><slot/></body></html>

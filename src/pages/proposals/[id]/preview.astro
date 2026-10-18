@@ -1,0 +1,5 @@
+---
+import ProposalLayout from '../../../layouts/ProposalLayout.astro'; import ProposalView from '../../../components/ProposalView.astro'; import { createSupabaseAdmin } from '../../../lib/server/supabase'; import { sanitizeDocument } from '../../../lib/server/proposals';
+const {data:proposal}=await createSupabaseAdmin().from('proposals').select('*,clients(*)').eq('id',Astro.params.id).single(); if(!proposal)return new Response('Not found',{status:404});
+---
+<ProposalLayout title={`Preview — ${proposal.project_name}`}><div class="preview-bar no-print"><span>Draft preview</span><p>This is not the active client-facing version.</p><a href={`/proposals/${proposal.id}/edit`}>Back to editor</a></div><ProposalView document={sanitizeDocument(proposal.draft_document)} client={proposal.clients} readonly/></ProposalLayout>
