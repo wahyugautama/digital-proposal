@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # ShipStudio metadata
 .shipstudio/
+
+# Local Netlify folder
+.netlify

@@ -1,6 +1,6 @@
 # Sandikala Proposals
 
-Private proposal management for Sandikala Studio, built on Astro 5, Vue 3 islands, Supabase PostgreSQL/Auth, and class-based CSS.
+Private proposal management for Sandikala Studio, built on Astro 7, Vue 3 islands, Supabase PostgreSQL/Auth, and class-based CSS.
 
 ## Local setup
 
@@ -22,7 +22,18 @@ Required environment variables:
 
 For a CLI-managed environment, link the existing project with `supabase link --project-ref <project-ref>`, review the migration, then use `supabase db push`. Do not apply the same migration through both the SQL Editor and the CLI.
 
-The app uses standalone Node SSR. Deploy it to any Node-compatible host. If moving to Netlify, replace `@astrojs/node` with the matching `@astrojs/netlify` adapter; no Netlify target existed in the original repository.
+The app uses the official Netlify adapter with Astro server output. Dynamic pages, middleware, and API routes are emitted for the Netlify Functions runtime.
+
+## Netlify deployment
+
+1. Create a new Netlify site from this repository. Do not enable automatic production deploys until the deploy preview smoke tests pass.
+2. Netlify reads the build command, publish directory, Node version, and baseline headers from `netlify.toml`.
+3. Add every variable listed in `.env.example` under **Site configuration > Environment variables**. Set `PUBLIC_APP_URL` to `https://proposals.sandikala.studio`; mark private values as secrets and scope them to Functions and Builds.
+4. Apply and verify the required Supabase migrations separately. The Netlify build does not modify the database.
+5. Deploy to a preview context and test login, session refresh, logout, protected page/API rejection, proposal publication, public-link rendering, and proposal response submission against a staging Supabase project.
+6. Add `proposals.sandikala.studio` in **Domain management**, create the DNS record Netlify requests, and wait for Netlify TLS provisioning before promoting the production deploy.
+
+The Supabase Auth project should allow `https://proposals.sandikala.studio` as its site URL. Add the exact Netlify deploy-preview origins only if preview authentication is required. Cookies are HTTP-only, SameSite=Lax, and Secure in production builds.
 
 ## Security migration deployment
 

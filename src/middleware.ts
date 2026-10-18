@@ -5,17 +5,16 @@ import { getPublicSupabaseUrl } from './lib/server/supabase';
 const publicPaths = ['/login', '/p/', '/api/auth/', '/api/public/'];
 const protectedPaths = ['/dashboard', '/proposals', '/clients', '/templates', '/settings', '/api/admin/'];
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  context.locals.user = await getRequestUser(context);
-  const path = context.url.pathname;
-  if (protectedPaths.some(prefix => path === prefix || path.startsWith(`${prefix}/`)) && !context.locals.user) {
-    if (path.startsWith('/api/')) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'content-type': 'application/json' } });
-    return context.redirect(`/login?next=${encodeURIComponent(path)}`);
-  }
-  const response = await next();
-  if (publicPaths.some(prefix => path === prefix || path.startsWith(prefix))) {
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+const matchesPath = (path: string, prefixes: string[]) => prefixes.some(prefix => (
+  prefix.endsWith('/') ? path.startsWith(prefix) : path === prefix || path.startsWith(`${prefix}/`)
+));
+
+const applySecurityHeaders = (response: Response, path: string) => {
+  if (matchesPath(path, [...publicPaths, ...protectedPaths])) {
     response.headers.set('Cache-Control', 'private, no-store, max-age=0');
+  }
+  if (matchesPath(path, publicPaths)) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive');
   }
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
@@ -35,4 +34,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
   ].join('; '));
   if (import.meta.env.PROD) response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   return response;
+};
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  context.locals.user = await getRequestUser(context);
+  const path = context.url.pathname;
+  if (protectedPaths.some(prefix => path === prefix || path.startsWith(`${prefix}/`)) && !context.locals.user) {
+    if (path.startsWith('/api/')) return applySecurityHeaders(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'content-type': 'application/json' } }), path);
+    return applySecurityHeaders(context.redirect(`/login?next=${encodeURIComponent(path)}`), path);
+  }
+  const response = await next();
+  return applySecurityHeaders(response, path);
 });
