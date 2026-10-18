@@ -1,66 +1,18 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
+import ProposalForm from '../../components/ProposalForm.vue';
+import { makeBuilderDocument } from '../../lib/proposal-builder';
 import { createSupabaseAdmin } from '../../lib/server/supabase';
-import { initialTemplates } from '../../lib/templates';
 
-const { data: clients = [], error } = await createSupabaseAdmin().from('clients').select('id,name,company,email').is('archived_at', null).order('name');
-if (error) return new Response('Unable to load clients.', { status: 500 });
+const db = createSupabaseAdmin();
+const [{ data: clients, error: clientsError }, { data: settings, error: settingsError }] = await Promise.all([
+  db.from('clients').select('id,name,company,email,phone').is('archived_at', null).order('name'),
+  db.from('studio_settings').select('default_currency,default_terms').limit(1).maybeSingle(),
+]);
+if (clientsError || settingsError) return new Response('Unable to load proposal builder.', { status: 500 });
+const document = makeBuilderDocument(settings?.default_terms ?? '');
+document.currency = settings?.default_currency === 'IDR' ? 'IDR' : 'USD';
 ---
-<AdminLayout title="Create proposal" eyebrow="New proposal">
-  <a slot="actions" class="button button-secondary" href="/">Cancel</a>
-  <form class="creation-layout" method="post" action="/api/admin/proposals">
-    <section class="creation-main">
-      <div class="section-heading"><span class="step-number">01</span><div><h2>Choose a starting point</h2><p>Each template provides a proven structure. Every detail remains editable.</p></div></div>
-      <div class="template-grid">
-        {initialTemplates.map((template, index) => <label class="template-option"><input type="radio" name="templateIndex" value={index} required checked={index === 0} /><span class="template-card"><span class="template-icon">{template.document.proposalType === 'quick' ? 'Q' : 'P'}</span><strong>{template.name}</strong><small>{template.document.proposalType === 'quick' ? 'Quick quotation' : 'Full proposal'} · {template.document.sections.length} sections</small><span class="template-select">Use template →</span></span></label>)}
-      </div>
-    </section>
-    <aside class="creation-aside">
-      <div class="section-heading compact"><span class="step-number">02</span><div><h2>Assign a client</h2><p>Who is this proposal for?</p></div></div>
-      <label class="form-field"><span>Client</span><select id="proposal-client" name="clientId" required><option value="">Select a client…</option>{clients?.map(client => <option value={client.id}>{client.company || client.name} — {client.email}</option>)}</select></label>
-      <button type="button" class="workspace-inline-link" data-open-client>+ Add new client</button>
-      <button class="button button-primary button-full">Create and edit →</button>
-    </aside>
-  </form>
-  <dialog class="modal" id="client-modal" aria-labelledby="client-modal-title">
-    <form class="modal-card" id="inline-client-form" action="/api/admin/clients" method="post">
-      <div class="modal-heading"><h2 id="client-modal-title">Add client</h2><button type="button" class="icon-button" data-close-client aria-label="Close">×</button></div>
-      <label class="form-field"><span>Contact name</span><input name="name" required minlength="2" maxlength="120" /></label>
-      <label class="form-field"><span>Company</span><input name="company" maxlength="160" /></label>
-      <label class="form-field"><span>Email</span><input name="email" type="email" required maxlength="254" /></label>
-      <label class="form-field"><span>Phone</span><input name="phone" maxlength="40" /></label>
-      <p class="workspace-form-error" role="alert" hidden></p>
-      <div class="modal-actions"><button type="button" class="button button-secondary" data-close-client>Cancel</button><button class="button button-primary" type="submit">Save client</button></div>
-    </form>
-  </dialog>
-  <script>
-    const dialog = document.querySelector<HTMLDialogElement>('#client-modal');
-    const form = document.querySelector<HTMLFormElement>('#inline-client-form');
-    const select = document.querySelector<HTMLSelectElement>('#proposal-client');
-    const errorMessage = form?.querySelector<HTMLElement>('.workspace-form-error');
-    const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
-    document.querySelector('[data-open-client]')?.addEventListener('click', () => dialog?.showModal());
-    document.querySelectorAll('[data-close-client]').forEach(button => button.addEventListener('click', () => dialog?.close()));
-    form?.addEventListener('submit', async event => {
-      event.preventDefault();
-      if (!form || !select || !submit || !errorMessage) return;
-      submit.disabled = true;
-      errorMessage.hidden = true;
-      try {
-        const response = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) });
-        const result = await response.json();
-        if (!response.ok || !result.client) throw new Error(result.error || 'Unable to create client.');
-        const client = result.client as { id: string; name: string; company: string | null; email: string };
-        select.add(new Option(`${client.company || client.name} — ${client.email}`, client.id));
-        select.value = client.id;
-        form.reset();
-        dialog?.close();
-      } catch (error) {
-        errorMessage.textContent = error instanceof Error ? error.message : 'Unable to create client.';
-        errorMessage.hidden = false;
-      } finally {
-        submit.disabled = false;
-      }
-    });
-  </script>
+<AdminLayout documentTitle="New proposal" showNewAction={false}>
+  <ProposalForm client:load initialDocument={document} clients={clients ?? []} initialClientId="" proposalId={null} status="draft" activeShareUrl={null} />
 </AdminLayout>

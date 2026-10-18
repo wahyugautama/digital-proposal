@@ -24,6 +24,14 @@ For a CLI-managed environment, link the existing project with `supabase link --p
 
 The app uses the official Netlify adapter with Astro server output. Dynamic pages, middleware, and API routes are emitted for the Netlify Functions runtime.
 
+## Structured proposal builder
+
+`/proposals/new` and `/proposals/[id]/edit` share a six-section Vue builder. The form saves a draft to the existing `proposals.draft_document` JSONB column. New documents include an optional versioned `builder` object; legacy documents and immutable published snapshots remain readable. No database migration is required. Preview and public sharing render a structured document only when that snapshot includes `builder`.
+
+Saving a new draft requires an existing or inline-created client because `proposals.client_id` is non-null. The rest of the proposal can be incomplete until publishing. `clients.email` is also non-null in the existing schema, so an omitted optional contact email is stored as an empty string; the public acceptance flow collects the client's email separately. Review this convention before integrating an external CRM that distinguishes null from an empty email.
+
+The builder stores selected services, custom scope, timeline, pricing adjustments, milestones, and approved clause text in the proposal JSON snapshot. Server routes recalculate investment totals and validate publish readiness. Existing published versions, secure links, and acceptance records are not rewritten.
+
 ## Netlify deployment
 
 1. Create a new Netlify site from this repository. Do not enable automatic production deploys until the deploy preview smoke tests pass.

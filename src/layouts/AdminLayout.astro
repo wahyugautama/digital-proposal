@@ -5,8 +5,8 @@ import ProductWordmark from '../components/ProductWordmark.astro';
 import ProductAttribution from '../components/ProductAttribution.astro';
 import { PRODUCT } from '../lib/product';
 
-interface Props { title?: string; documentTitle?: string; eyebrow?: string }
-const { title, documentTitle, eyebrow } = Astro.props;
+interface Props { title?: string; documentTitle?: string; eyebrow?: string; showNewAction?: boolean }
+const { title, documentTitle, eyebrow, showNewAction = true } = Astro.props;
 const email = Astro.locals.user?.email ?? '';
 ---
 <!doctype html>
@@ -27,7 +27,7 @@ const email = Astro.locals.user?.email ?? '';
       <div class="workspace-header-inner">
         <a class="workspace-brand" href="/" aria-label={`${PRODUCT.name} home`}><ProductWordmark /></a>
         <div class="workspace-header-actions">
-          <a class="button button-primary workspace-new" href="/proposals/new">+ New proposal</a>
+          {showNewAction && <a class="button button-primary workspace-new" href="/proposals/new">+ New proposal</a>}
           <details class="account-menu">
             <summary aria-label="Account options" title="Account options"><span aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span></summary>
             <div class="account-popover">

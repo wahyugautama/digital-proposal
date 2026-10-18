@@ -1,5 +1,6 @@
-import { calculateInvestment } from '../money';
-import { proposalDocumentSchema } from '../schemas';
+import { calculateInvestment, calculateMilestones } from '../money';
+import { calculateBuilderInvestment, syncBuilderDocument } from '../proposal-builder';
+import { getPublishIssues, proposalDocumentSchema } from '../schemas';
 import type { ProposalDocument } from '../types';
 import { createSupabaseAdmin } from './supabase';
 import { createAccessToken, encryptAccessToken, hashToken, sanitizeRichText } from './security';
@@ -40,8 +41,14 @@ export const publishProposal = async (proposalId: string, userId: string) => {
   if (error || !proposal) throw new Error('Proposal not found.');
   if (proposal.status === 'accepted') throw new Error('Accepted proposals cannot be republished. Duplicate it to create a new proposal.');
   const document = proposalDocumentSchema.parse(proposal.draft_document);
-  const snapshot = sanitizeDocument(document);
-  const totalMinor = calculateInvestment(snapshot.phases, snapshot.discountMinor, snapshot.taxBasisPoints).totalMinor;
+  const issues = getPublishIssues(document);
+  if (issues.length) throw new Error(issues[0]);
+  const snapshot = sanitizeDocument(syncBuilderDocument(document));
+  const totalMinor = snapshot.builder ? calculateBuilderInvestment(snapshot.builder).totalMinor : calculateInvestment(snapshot.phases, snapshot.discountMinor, snapshot.taxBasisPoints).totalMinor;
+  if (snapshot.builder) {
+    const amounts = calculateMilestones(totalMinor, snapshot.builder.milestones);
+    if (amounts.reduce((sum, item) => sum + item.amountMinor, 0) !== totalMinor) throw new Error('Payment milestone amounts do not match the total investment.');
+  }
   const token = createAccessToken();
   const tokenHash = await hashToken(token);
   const encryptedToken = await encryptAccessToken(token);
