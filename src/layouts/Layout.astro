@@ -1,7 +1,9 @@
 ---
 import '../styles/main.css';
+import '../styles/product-brand.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { PRODUCT } from '../lib/product';
 
 interface Props {
   title?: string;
@@ -9,8 +11,8 @@ interface Props {
 }
 
 const {
-  title = 'Northwind — HTML + CSS Astro starter',
-  description = 'A fast, no-framework Astro starter styled with plain, class-based CSS.',
+  title = PRODUCT.name,
+  description = PRODUCT.description,
 } = Astro.props;
 ---
 
@@ -22,6 +24,9 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    <meta name="application-name" content={PRODUCT.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

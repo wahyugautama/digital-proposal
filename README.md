@@ -1,6 +1,6 @@
-# Sandikala Proposals
+# at 1801
 
-Private proposal management for Sandikala Studio, built on Astro 7, Vue 3 islands, Supabase PostgreSQL/Auth, and class-based CSS.
+Where ideas become agreements. A product by Sandikala Studio, built on Astro 7, Vue 3 islands, Supabase PostgreSQL/Auth, and class-based CSS.
 
 ## Local setup
 

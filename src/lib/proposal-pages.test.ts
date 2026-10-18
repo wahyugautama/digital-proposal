@@ -32,5 +32,8 @@ describe('proposal page rendering', () => {
     });
     expect(html).toContain('Representative project');
     expect(html).toContain('Representative client');
+    expect(html).toContain('Prepared by');
+    expect(html).toContain('Sandikala Studio');
+    expect(html).not.toContain('at 1801');
   });
 });

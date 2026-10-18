@@ -4,12 +4,12 @@ import { createSupabasePublic, isAllowedAdmin } from '../../../lib/server/supaba
 import { setSessionCookies } from '../../../lib/server/auth';
 
 export const getSafeRedirectPath = (value?: string) => {
-  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/dashboard';
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return '/';
   try {
     const parsed = new URL(value, 'https://internal.invalid');
-    return parsed.origin === 'https://internal.invalid' ? `${parsed.pathname}${parsed.search}${parsed.hash}` : '/dashboard';
+    return parsed.origin === 'https://internal.invalid' ? `${parsed.pathname}${parsed.search}${parsed.hash}` : '/';
   } catch {
-    return '/dashboard';
+    return '/';
   }
 };
 

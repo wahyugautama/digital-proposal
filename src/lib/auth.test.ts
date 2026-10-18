@@ -18,8 +18,8 @@ describe('admin authorization', () => {
 describe('login redirects', () => {
   it('allows only internal absolute paths', () => {
     expect(getSafeRedirectPath('/proposals?status=draft')).toBe('/proposals?status=draft');
-    expect(getSafeRedirectPath('//attacker.example/path')).toBe('/dashboard');
-    expect(getSafeRedirectPath('/\\attacker.example')).toBe('/dashboard');
-    expect(getSafeRedirectPath('https://attacker.example')).toBe('/dashboard');
+    expect(getSafeRedirectPath('//attacker.example/path')).toBe('/');
+    expect(getSafeRedirectPath('/\\attacker.example')).toBe('/');
+    expect(getSafeRedirectPath('https://attacker.example')).toBe('/');
   });
 });

@@ -10,7 +10,7 @@ const matchesPath = (path: string, prefixes: string[]) => prefixes.some(prefix =
 ));
 
 const applySecurityHeaders = (response: Response, path: string) => {
-  if (matchesPath(path, [...publicPaths, ...protectedPaths])) {
+  if (path === '/' || matchesPath(path, [...publicPaths, ...protectedPaths])) {
     response.headers.set('Cache-Control', 'private, no-store, max-age=0');
   }
   if (matchesPath(path, publicPaths)) {
@@ -39,7 +39,7 @@ const applySecurityHeaders = (response: Response, path: string) => {
 export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = await getRequestUser(context);
   const path = context.url.pathname;
-  if (protectedPaths.some(prefix => path === prefix || path.startsWith(`${prefix}/`)) && !context.locals.user) {
+  if ((path === '/' || matchesPath(path, protectedPaths)) && !context.locals.user) {
     if (path.startsWith('/api/')) return applySecurityHeaders(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'content-type': 'application/json' } }), path);
     return applySecurityHeaders(context.redirect(`/login?next=${encodeURIComponent(path)}`), path);
   }

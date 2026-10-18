@@ -1,0 +1,4 @@
+.product-wordmark{letter-spacing:-.045em;text-transform:none;white-space:nowrap}
+.product-attribution{color:var(--muted);font:400 11px/1.5 var(--sans)}
+.product-attribution a{text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px}
+.product-attribution a:hover,.product-attribution a:focus-visible{text-decoration-color:currentColor}

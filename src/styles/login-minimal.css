@@ -1,0 +1,15 @@
+.login-simple-body{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;background:var(--paper)}
+.login-simple-main{display:grid;flex:1;place-items:center;padding:32px 20px}
+.login-simple-content{width:min(100%,380px)}
+.login-simple-wordmark{margin:0 0 34px;font:500 42px/1 var(--display)}
+.login-simple-form{display:grid;gap:22px;width:min(100%,380px)}
+.login-simple-field{display:grid;gap:9px}
+.login-simple-field span{font:600 12px var(--sans);letter-spacing:.01em}
+.login-simple-field input{display:block;width:100%;height:48px;border:1px solid var(--line);border-radius:2px;padding:0 14px;background:var(--white);outline:none;font:400 14px var(--body);transition:border-color .15s ease,box-shadow .15s ease}
+.login-simple-field input:hover{border-color:#b8b7af}
+.login-simple-field input:focus-visible{border-color:var(--ink);box-shadow:0 0 0 2px #1a1a1814}
+.login-simple-submit{width:100%;min-height:48px;margin-top:4px;border:1px solid var(--ink);border-radius:2px;background:var(--ink);color:var(--white);font:600 13px var(--sans);cursor:pointer;transition:background-color .15s ease}
+.login-simple-submit:hover{background:var(--dark)}
+.login-simple-submit:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.login-simple-error{margin:0;color:#813e33;font:400 12px/1.5 var(--body)}
+.login-simple-footer{padding:0 20px 22px;text-align:center}

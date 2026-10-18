@@ -1,3 +1,14 @@
 ---
-return Astro.redirect(Astro.locals.user ? '/dashboard' : '/login');
+import AdminLayout from '../layouts/AdminLayout.astro';
+import ProposalWorkspace from '../components/ProposalWorkspace.vue';
+import { listProposals } from '../lib/server/proposal-list';
+
+let result;
+try {
+  result = await listProposals();
+} catch (error) {
+  console.error('Unable to load proposal workspace', error);
+  return new Response('Unable to load proposals.', { status: 500 });
+}
 ---
+<AdminLayout documentTitle="Proposals"><ProposalWorkspace client:load initialProposals={result.proposals} initialTotal={result.total} /></AdminLayout>

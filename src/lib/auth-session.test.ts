@@ -4,11 +4,12 @@ const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
   refreshSession: vi.fn(),
   signOut: vi.fn(),
+  setSession: vi.fn(),
   profileResult: { data: null as { id: string; email: string } | null, error: null as Error | null },
 }));
 
 vi.mock('./server/supabase', () => ({
-  createSupabasePublic: () => ({ auth: { getUser: mocks.getUser, refreshSession: mocks.refreshSession, signOut: mocks.signOut } }),
+  createSupabasePublic: () => ({ auth: { getUser: mocks.getUser, refreshSession: mocks.refreshSession, signOut: mocks.signOut, setSession: mocks.setSession } }),
   createSupabaseAdmin: () => ({
     from: () => ({
       select: () => ({
@@ -21,6 +22,7 @@ vi.mock('./server/supabase', () => ({
 }));
 
 import { getRequestUser } from './server/auth';
+import { POST as logout } from '../pages/api/auth/logout';
 
 const createContext = (initial: Record<string, string>) => {
   const values = new Map(Object.entries(initial));
@@ -79,5 +81,19 @@ describe('server session lifecycle', () => {
 
     await expect(getRequestUser(context as never)).resolves.toBeNull();
     expect(context.cookies.delete).toHaveBeenCalledTimes(2);
+  });
+
+  it('signs out and clears both cookies', async () => {
+    mocks.setSession.mockResolvedValue({ error: null });
+    mocks.signOut.mockResolvedValue({ error: null });
+    const context = createContext({ 'sb-access-token': 'valid-access', 'sb-refresh-token': 'valid-refresh' });
+    const redirect = vi.fn((path: string, status: number) => new Response(null, { status, headers: { location: path } }));
+
+    const response = await logout({ cookies: context.cookies, redirect } as never);
+    expect(mocks.signOut).toHaveBeenCalledWith({ scope: 'local' });
+    expect(context.cookies.delete).toHaveBeenCalledWith('sb-access-token', { path: '/' });
+    expect(context.cookies.delete).toHaveBeenCalledWith('sb-refresh-token', { path: '/' });
+    expect(response.status).toBe(303);
+    expect(response.headers.get('location')).toBe('/login');
   });
 });

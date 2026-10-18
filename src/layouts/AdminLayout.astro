@@ -1,9 +1,47 @@
 ---
 import '../styles/main.css';
-interface Props { title: string; eyebrow?: string }
-const { title, eyebrow } = Astro.props;
-const path = Astro.url.pathname;
-const nav = [['/dashboard','Overview'],['/proposals','Proposals'],['/clients','Clients'],['/templates','Templates'],['/settings','Settings']];
+import '../styles/product-brand.css';
+import ProductWordmark from '../components/ProductWordmark.astro';
+import ProductAttribution from '../components/ProductAttribution.astro';
+import { PRODUCT } from '../lib/product';
+
+interface Props { title?: string; documentTitle?: string; eyebrow?: string }
+const { title, documentTitle, eyebrow } = Astro.props;
+const email = Astro.locals.user?.email ?? '';
 ---
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><meta name="description" content="Sandikala Studio proposal management"/><meta name="robots" content="noindex,nofollow"/><title>{title} · Sandikala Proposals</title></head>
-<body class="app-body"><div class="app-shell"><aside class="app-sidebar"><a class="app-brand" href="/dashboard"><span class="brand-mark">S</span><span>Sandikala<br/><small>Proposals</small></span></a><nav class="app-nav" aria-label="Main navigation">{nav.map(([href,label]) => <a class:list={['app-nav-link', path.startsWith(href) && 'is-active']} href={href}>{label}</a>)}</nav><div class="app-user"><div><strong>{Astro.locals.user?.email?.split('@')[0]}</strong><small>Studio admin</small></div><form action="/api/auth/logout" method="post"><button class="icon-button" title="Sign out" aria-label="Sign out">↗</button></form></div></aside><main class="app-main"><header class="page-heading"><div>{eyebrow && <p class="eyebrow">{eyebrow}</p>}<h1>{title}</h1></div><slot name="actions"/></header><slot/></main></div></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={PRODUCT.description} />
+    <meta name="application-name" content={PRODUCT.name} />
+    <meta property="og:title" content={`${documentTitle ?? title ?? PRODUCT.name}${documentTitle || title ? ` — ${PRODUCT.name}` : ''}`} />
+    <meta property="og:description" content={PRODUCT.description} />
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{documentTitle ?? title ? `${documentTitle ?? title} — ${PRODUCT.name}` : PRODUCT.name}</title>
+  </head>
+  <body class="workspace-body">
+    <header class="workspace-header">
+      <div class="workspace-header-inner">
+        <a class="workspace-brand" href="/" aria-label={`${PRODUCT.name} home`}><ProductWordmark /></a>
+        <div class="workspace-header-actions">
+          <a class="button button-primary workspace-new" href="/proposals/new">+ New proposal</a>
+          <details class="account-menu">
+            <summary aria-label="Account options" title="Account options"><span aria-hidden="true">{email.slice(0, 1).toUpperCase()}</span></summary>
+            <div class="account-popover">
+              <span class="account-email">{email}</span>
+              <form action="/api/auth/logout" method="post"><button type="submit">Sign out</button></form>
+            </div>
+          </details>
+        </div>
+      </div>
+    </header>
+    <main class="workspace-main">
+      {title && <header class="page-heading"><div>{eyebrow && <p class="eyebrow">{eyebrow}</p>}<h1>{title}</h1></div><slot name="actions" /></header>}
+      <slot />
+    </main>
+    <footer class="workspace-footer"><ProductAttribution /></footer>
+  </body>
+</html>

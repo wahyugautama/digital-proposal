@@ -1,7 +1,46 @@
 ---
-if (Astro.locals.user) return Astro.redirect('/dashboard');
+if (Astro.locals.user) return Astro.redirect('/');
 import '../styles/main.css';
+import '../styles/login-minimal.css';
+import '../styles/product-brand.css';
+import ProductWordmark from '../components/ProductWordmark.astro';
+import ProductAttribution from '../components/ProductAttribution.astro';
+import { PRODUCT } from '../lib/product';
 const hasError = Astro.url.searchParams.has('error');
-const next = Astro.url.searchParams.get('next') ?? '/dashboard';
+const next = Astro.url.searchParams.get('next') ?? '/';
 ---
-<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><meta name="robots" content="noindex"/><title>Sign in · Sandikala Proposals</title></head><body class="login-body"><main class="login-shell"><section class="login-intro"><a class="login-logo" href="/">SANDIKALA®</a><div><p class="eyebrow light">Internal workspace</p><h1>Proposals with clarity, craft, and intention.</h1><p>Create considered client experiences—from first scope to final approval.</p></div><p class="login-footnote">Private system · Authorized access only</p></section><section class="login-panel"><form class="login-form" action="/api/auth/login" method="post"><p class="eyebrow">Welcome back</p><h2>Sign in to your workspace</h2><p>Use your authorized Sandikala Studio account.</p>{hasError && <div class="alert alert-error" role="alert">The email or password is incorrect, or this account is not authorized.</div>}<input type="hidden" name="next" value={next}/><label class="form-field"><span>Email address</span><input name="email" type="email" autocomplete="email" required placeholder="you@sandikala.studio"/></label><label class="form-field"><span>Password</span><input name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="••••••••"/></label><button class="button button-primary button-full" type="submit">Sign in <span>→</span></button><small>There is no public registration. Contact the studio owner if you need access.</small></form></section></main></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content={PRODUCT.description} />
+    <meta name="application-name" content={PRODUCT.name} />
+    <meta property="og:title" content={`Sign in — ${PRODUCT.name}`} />
+    <meta property="og:description" content={PRODUCT.description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Sign in — {PRODUCT.name}</title>
+  </head>
+  <body class="login-simple-body">
+    <main class="login-simple-main">
+      <div class="login-simple-content">
+      <h1 class="login-simple-wordmark"><ProductWordmark /></h1>
+      <form class="login-simple-form" action="/api/auth/login" method="post">
+        <input type="hidden" name="next" value={next} />
+        {hasError && <p class="login-simple-error" role="alert">Incorrect email or password, or this account is not authorized.</p>}
+        <label class="login-simple-field">
+          <span>Email</span>
+          <input name="email" type="email" inputmode="email" autocomplete="username" autocapitalize="none" spellcheck="false" required />
+        </label>
+        <label class="login-simple-field">
+          <span>Password</span>
+          <input name="password" type="password" autocomplete="current-password" minlength="8" required />
+        </label>
+        <button class="login-simple-submit" type="submit">Sign in</button>
+      </form>
+      </div>
+    </main>
+    <footer class="login-simple-footer"><ProductAttribution /></footer>
+  </body>
+</html>
