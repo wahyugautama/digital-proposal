@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { builtinModules } from 'node:module';
 import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -13,8 +14,14 @@ const source = await readFile(chunkPath, 'utf8');
 if (!source.includes('node_modules/htmlparser2/dist/index.js')) {
   throw new Error('htmlparser2 was not bundled into the Netlify SSR sanitizer chunk.');
 }
-if (/from ["'](?:sanitize-html|htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities|postcss|picocolors)["']|__require\(["'](?:htmlparser2|postcss|picocolors)["']\)/.test(source)) {
-  throw new Error('Netlify SSR sanitizer chunk still loads an external sanitizer dependency.');
+const builtins = new Set(builtinModules.flatMap(name => [name, `node:${name}`]));
+const runtimeRequires = [...source.matchAll(/__require\(\s*["']([^"']+)["']\s*\)/g)]
+  .map(match => match[1])
+  .filter(specifier => !builtins.has(specifier));
+if (runtimeRequires.length > 0) {
+  throw new Error(
+    `Netlify SSR sanitizer chunk still has external runtime dependencies: ${[...new Set(runtimeRequires)].join(', ')}`,
+  );
 }
 
 const exportName = source.match(/sanitizeRichText as ([\w$]+)/)?.[1];
