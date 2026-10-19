@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { createAccessToken, decryptAccessToken, encryptAccessToken, hashToken, sanitizeRichText } from './server/security';
 
 describe('public proposal security', () => {
@@ -11,6 +12,15 @@ describe('public proposal security', () => {
   it('removes executable rich text', () => {
     const output = sanitizeRichText('<p>Hello</p><script>alert(1)</script><a href="javascript:bad()">Bad</a>');
     expect(output).toContain('<p>Hello</p>'); expect(output).not.toContain('<script'); expect(output).not.toContain('javascript:');
+  });
+
+  it('loads and executes the real sanitizer in a native server-side Node process', () => {
+    const output = execFileSync(process.execPath, [
+      '--input-type=module',
+      '-e',
+      "import sanitizeHtml from 'sanitize-html'; process.stdout.write(sanitizeHtml('<p>Safe</p><script>bad()</script><a href=\"javascript:bad()\">link</a>'));",
+    ], { cwd: process.cwd(), encoding: 'utf8' });
+    expect(output).toBe('<p>Safe</p><a>link</a>');
   });
 
   it('encrypts recoverable tokens with authenticated AES-256-GCM', async () => {

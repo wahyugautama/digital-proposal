@@ -3,9 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/verify-netlify-sanitizer.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
