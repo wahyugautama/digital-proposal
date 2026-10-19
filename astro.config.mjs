@@ -7,7 +7,7 @@ const sanitizerDependencies = [
   'sanitize-html', 'htmlparser2', 'domhandler', 'domutils',
   'dom-serializer', 'domelementtype', 'entities',
   'escape-string-regexp', 'is-plain-object', 'parse-srcset',
-  'postcss', 'launder',
+  'postcss', 'picocolors', 'launder',
 ];
 
 /** @type {import('astro').AstroIntegration} */

@@ -13,8 +13,8 @@ const source = await readFile(chunkPath, 'utf8');
 if (!source.includes('node_modules/htmlparser2/dist/index.js')) {
   throw new Error('htmlparser2 was not bundled into the Netlify SSR sanitizer chunk.');
 }
-if (/from ["'](?:sanitize-html|htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities)["']|__require\(["']htmlparser2["']\)/.test(source)) {
-  throw new Error('Netlify SSR sanitizer chunk still loads an external parser dependency.');
+if (/from ["'](?:sanitize-html|htmlparser2|domhandler|domutils|dom-serializer|domelementtype|entities|postcss|picocolors)["']|__require\(["'](?:htmlparser2|postcss|picocolors)["']\)/.test(source)) {
+  throw new Error('Netlify SSR sanitizer chunk still loads an external sanitizer dependency.');
 }
 
 const exportName = source.match(/sanitizeRichText as ([\w$]+)/)?.[1];
